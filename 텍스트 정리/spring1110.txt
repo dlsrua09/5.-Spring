@@ -1,0 +1,110 @@
+< jdk 1.8 삭제 >
+제어판-시스템-고급설정-환경변수-path들어가서:
+javahome1.8.0
+javahome/bin삭제;
+
+path 전에 시스템 변수에서 
+JAVAHOME-1.8.0이랑 관련된 거 1개 더 지우기.
+jdk1.8.0삭제; -> 확인 나가기
+
+프로그램 추가/제거 : 자바 2개 지우기.
+
+< jdk 다운로드 >
+google들어가서,
+jdk11 검색 후 맨위 거 들어가.
+jdk11 밑에서 2번째거 다운로드
+
+오라클 계정:
+dlsrua09@naver.com
+!Kk38615881
+
+다운 완료 후
+제어판-환경변수-아래쪽 시스템변수
+-새로만들기
+변수이름:JAVA_HOME
+아래:C:\Program Files\Java\jdk-11.0.16.1 확인 후
+path선택 후 편집:%JAVA_HOME%\bin 만들고 확인.
+cmd들어가서 - javac- version 확인 후 버전 확인
+
+google에서 
+sts검색 - tool 들어가기.
+밑으로 쭉 내려보면 Looking for Spring Tool Suite3에
+string tool 3 wiki 들어가기
+(검은색 배경에 파란색 a태그)
+
+내리면 3.9.18바로 아래 맨 위 링크 다운
+- 다운로드 들어가서- 반디집으로 압축해제.
+
+폴더-sts_bundle-sts-3.9.18RELEASE들어가서
+- STS.exe실행하면 됌.
+
+- 실행 후 왼쪽아래 server아래 파란색 클릭오전 1:18 2022-11-18
+- Apache 펼치기 후, tomcat 9.0 선택후 next
+- brower누른후 apatche-tomcat 9.0.68 폴더선택 클릭
+- 다 했으면 finish 
+------------------------------------------------------
+< 새로 만들기 >
+왼쪽 여백에 우클릭
+new legacy project 클릭, 
+-Templates에서
+-String MVC Project선택하고, 
+파일명(_001_StringFramework) 적고, 
+next하고, yes하고
+-다음 빈 여백에-com.ezen.spring적기. 다했으면 finish
+
+
+< 수정 >
+프로젝트 우클릭 -프로퍼티- project Facets에서
+- Dynamic web: 3.1 , java: 11 하고 
+오른쪽 runtime들어가서 아파치 클릭 후 apply
+
+하고 pom.xml(젤 아래) 더블클릭
+-> 자바 1.6을 11로 변경
+-> servlet 3.1.0
+- >내려서 test -> plugin source, target:11로 변경했으면
+
+프로젝트 우클릭해서-maven-update 선택 확인
+
+src-main-webapp-WEB-INF-web.xml들어가서 
+아래 source에 버전 2.5를 3.1로 다변경
+다 했으면 저장하고 껐다가 다시 켜기.
+
+< Maven 에러 제거 >
+검색창에 maven repository사이트 들어가기
+servlet api 검색하고
+맨위 1. 자바클릭
+- 버전 밑에 표 나오면
+- 3.1.0 클릭하면 Maven 선택하면 dependency나와있음.
+-  <groupId>javax.servlet</groupId>
+    <artifactId>javax.servlet-api</artifactId>
+    <version>3.1.0</version>
+    <scope>provided</scope>
+- 복사 후 dependency안에 붙혀넣기.
+
+window-preference-general-workspace-other(UTF-8)
+preference- content Type- java class - utf-8 update
+preference- content Type- jsp - uft-8 update
+preference- web - 
+Encoding:jsp, html - uft-8 설정 apply후 close
+
+
+org.springframework-version -> 
+POM.XML( Maven dependencies를 의존성을 주입시켜줌 )
+위에서부터
+springframework: 5.2.22.RELEASE로 변경
+aspectj -version: 1.9.9
+slf4j -version: 1.7.36 으로 변경
+
+web.xml - servlet-class링크를 컨트롤 눌르고 클릭하면 들어가짐.
+
+< 프로젝트 2번 만들기 >
+프로젝트 누르고 컨트롤 c, 컨트롤v 하면 카피가능함
+카피란에 _002_StringFramework_Coupling 만들고
+- src/main/java에 com.ezen.spring.polymorphism 패키지 만들고,
+   com.ezen.spring패키지 지우기.
+- class: LgTV, SamsungTV, TVUser(main체크) 클래스 만들기
+
+< 프로젝트 3번 만들기 >
+
+
+

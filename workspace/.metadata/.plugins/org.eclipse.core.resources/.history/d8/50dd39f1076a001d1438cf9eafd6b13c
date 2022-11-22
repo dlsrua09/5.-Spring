@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+ 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 	
+<mapper namespace="UserDAO">
+	<!-- 쿼리 작성 영역 -->
+	<select id="idCheck" parameterType="string" resultType="int">
+		SELECT COUNT(USER_ID)
+		FROM T_USER
+		WHERE USER_ID = #{userId}
+	</select>
+	
+	<insert id="join" parameterType="user">
+	
+	<!-- <![CDATA[]]> 는 <,> 들을 부등호로 인식하게 만들어줌 Map 할때 많이 사용  -->
+		<![CDATA[
+			INSERT INTO T_USER(
+			USER_ID,
+			USER_PW,
+			USER_NM,
+			USER_MAIL,
+			USER_TEL
+			USER_REDGATE
+		) VALUES (
+			#{userId},
+			#{userPw},
+			#{userNm},
+			#{userMail},
+			#{userTel},
+			NOW()
+		)
+		]]> 
+		)
+	</insert>
+</mapper>

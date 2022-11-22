@@ -1,0 +1,15 @@
+package com.ezen.springboard.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.ezen.springboard.service.user.UserService;
+
+@Controller
+@RequestMapping("/user") // 폴더 방식으로 만드는게 편함. 유저 안에 있는 것들을 꺼내라   userController는 /user로 불림
+public class UserController {
+	@Autowired
+	private UserService userService;
+
+}

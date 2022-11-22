@@ -1,0 +1,365 @@
+_004_SpringFramework_SpringContainer 파일 만들기.
+004 - src- web_inf-spring-root-context에서
+밑에 namespace 클릭하기.
+
+namespace를 이용하면 source에서 바로 적용됨.(알아두기)
+
+root-context.xml에서
+<!-- Root Context(프로젝트 별로 파일 이름이 다를 수 있음): 부모 스프링 컨테이너를 만드는 설정 파일 -->
+	
+	<!-- bean 객체 생성 -->
+	<!-- 컨테이너가 구동되면서 자동으로 생성 -->
+	<!-- 어떤 id로 어떤 객체를 생성할 건지 -->
+	<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV"/>
+적기
+
+TVUser 돌아와서
+// TODO Auto-generated method stub
+		// 1. 스프링 컨테이너 구동, 컨트롤 쉬프트 o 자동완성
+		// 스프링 컨테이너 객체 생성				  어떤 파일을 읽어서 스프링 컨테이너를 구동할지
+		AbstractApplicationContext factory =  new GenericXmlApplicationContext("root-context.xml");
+이것만 적고
+
+SamsungTV 가서
+public SamsungTV() {
+		System.out.println("===> 삼성 티비 객체 생성");
+	}
+이거 적기.
+
+ 다시 TVUser로 돌아와서
+아무것도 안하고, 
+root-context.xml를 src/main/resources로 복사붙혀넣기하고,
+spring에 있던 root-context.xml를 삭제한다.
+
+실행해보기.
+------------------
+root-context로 가서
+<!-- 컨트롤+스페이스 - 클래스 자동완성 -->
+	<bean id="lTv" class="com.ezen.spring.polymorphism.LgTV"/>
+작성.
+
+LgTV 가서 
+public LgTV() {
+		System.out.println("===> LgTV 객체 생성");
+	}
+작성.
+-----------------
+TVUser 실행해보기.
+
+// 2. DL과 DI
+		// DL(Dependency Lookup): sTv라는 id를 가진 bean객체를 찾음
+		// DI(Dependency Injection): DL에서 찾은 bean객체를 tv에 의존성 주입
+		TV tv = (TV)factory.getBean("sTv");
+		tv.turnOn();
+		tv.volumeUp();
+		tv.volumeDown();
+		tv.turnOff();
+작성해보고 실행해보기.
+-------------------
+다시 md로 돌아가기.
+
+----------------
+돌아와서
+_005_SpringFramework_BeanProperties 만들고
+
+SamsungTV 와서
+
+int ch = 0;
+	
+	public SamsungTV() {
+		System.out.println("===> 삼성 티비 객체 생성");
+	}
+	
+	// 멤버변수 초기화 해주는 초기화 메소드
+	// init-method 속성으로 등록하여 항상 전원을 켜면 10번 채널부터 켜지도록 설정.
+	public void initMethod() {
+		this.ch = 10;
+	}
+	
+	@Override
+	public void turnOn() {
+		System.out.println("SamsungTV -- 전원 켜기");
+		System.out.println("SamsungTV -- 현재 채널: " + ch);
+	}
+작성하고
+
+root-context와서
+<!-- init-method: 멤버변수 초기화가 필요한 객체들은 초기화 메소드를 만들어서 등록 -->
+	<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV" init-method="initMethod"/>
+작성.
+
+TVUser와서 실행.
+md로 돌아가기.
+---------------------
+< destroy-method >
+다시 SamsungTV 돌아와서
+// 객체가 삭제되기 전에 실행될 메소드
+	// destory-method로 등록하여
+	// 항상 객체가 삭제되기 전에 채널을 20으로 변경
+	public void destroyMethod() {
+		this.ch = 20;
+		System.out.println("객체 삭제 전 채널: " + ch);
+	}
+작성하고, root-context 가서
+<!-- destroy-method: 객체 삭제 되기 전에 해야할 동작들을 메소드로 지정 -->
+	<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV" 
+	init-method="initMethod" destroy-method="destroyMethod"/>
+작성하고 실행(TVUser)해보기.
+
+md로 ㄱㄱ씽
+-----------------------
+< lazy-init >
+005 root-context가서
+<!-- lazy-init: 객체의 생성 시점 설정. false가 기본값. true 설정 시 객체를 요청할 때 생성 -->
+	<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV" 
+	init-method="initMethod" destroy-method="destroyMethod" lazy-init="true"/>
+작성.
+TVUser 돌아가서 
+
+// lazy-init속성이 true일 때는 getBean으로 해당 객체를 요청하면 객체 생성
+//		TV tv = (TV)factory.getBean("sTv");
+//		tv.turnOn();
+//		tv.volumeUp();
+//		tv.volumeDown();
+//		tv.turnOff();
+작성 하고 실행.
+md로 ㄱㄱ
+------------------------------
+< scope >
+005 root-context가서
+<!-- scope: 객체 생성 방식(하나의 객체만 생성할 지 여러개 객체를 생성할 지) 지정, 기본값: singleton
+                     객체를 계속해서 생성하게 되면, 메모리 부하가 걸리기 때문에 singleton으로 지정하는 것이 바람직하다. -->
+	<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV" 
+	init-method="initMethod" destroy-method="destroyMethod" 
+	lazy-init="true" scope="prototype"/>
+작성하고, TVUser돌아가서
+TV tv1 = (TV)factory.getBean("sTv");
+		TV tv2 = (TV)factory.getBean("sTv");
+		TV tv3 = (TV)factory.getBean("sTv");
+작성뒤 실행해보기.( 그러면 3개가 딱 생성 )
+md로 ㄱㄱ
+--------------------------
+생성: _006_SpringFramework_DI
+클래스 SonySpeaker 생성
+ 
+public SonySpeaker() {
+		System.out.println("===> 소니 스피커 객체 생성");
+	}
+	
+	public void volumeUp() {
+		System.out.println("SonySpeaker --- 소리 증가");
+	}
+	
+	public void volumeDown() {
+		System.out.println("SonySpeaker --- 소리 감소");
+	}
+
+하고,  LgTV가서
+ 
+	// 소니 스피커에 의존성
+	SonySpeaker speaker;
+
+	@Override
+	public void volumeUp() {
+		//System.out.println("LgTV -- 소리 증가");
+		// 의존성 주입
+		speaker = new SonySpeaker();
+		speaker.volumeUp();
+	}
+	
+	@Override
+	public void volumeDown() {
+		//System.out.println("LgTV -- 소리 감소");
+		// 의존성 주입
+		speaker = new SonySpeaker();
+		speaker.volumeDown();
+	}
+생성하고, SamsungTV가서 똑같이 만듦. ( 의존성 주입 )
+USERTv가서
+TV tv1 = (TV)factory.getBean("sTv");
+		tv1.turnOn();
+		tv1.volumeUp();
+		tv1.volumeDown();
+		tv1.turnOff();
+하고 실행.
+---------------------
+_007_SpringFramework_DI_Constructor 생성하기.
+
+- SamsungTV가서 
+public SamsungTV(SonySpeaker speaker) {
+		// 의존성 주입
+		this.speaker = speaker;
+		System.out.println("====> 삼성 티비 객체 생성( 매개변수 있는 생성자 )");
+	}
+생성하고 
+
+volumeUp ,down()에
+// 생성자 함수를 통해 주입 의존을 이용
+		speaker.volumeDown();
+이거만 만들기.
+
+root-context가서
+<!-- 생성자 변경 시 <constructor-arg ref="매개변수로 가져갈 객체id, 숫자, 스트링 등"></constructor-arg> -->
+	<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV">
+		<constructor-arg ref="sony"></constructor-arg>
+	</bean>
+	
+	<!-- constructor-arg ref에 객체가 들어갈 경우 미리 생성된 객체를 사용해야됨.
+	     그래서 SonySpeaker도 bean객체로 등록  -->
+	<bean id="sony" class="com.ezen.spring.polymorphism.SonySpeaker"></bean>
+만들고, TVUser로 돌아가서 실행.
+--------------
+samsungTV
+
+int price;
+
+public SamsungTV(SonySpeaker speaker, int price) {
+		// 의존성 주입
+		this.speaker = speaker;
+		this.price = price;
+		System.out.println("====> 삼성 티비 객체 생성( 다중 매개변수 있는 생성자 )");
+	}
+하고, ROOT
+
+<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV">
+<constructor-arg index="0" ref="sony"></constructor-arg>
+<constructor-arg index="1" value="100000"></constructor-arg>
+	</bean>
+
+하고, SAMSUNGTv가서
+public void turnOn() 안에,
+	System.out.println("SamsungTV -- 가격: " + price); 만들기.
+TVUser에서 실행해보기.
+----------------------------------
+
+_008_SpringFramework_DI_Constructor_Interface
+
+- 한번 ref="apple"이 와서 실행시키도록 해봐라.
+-------------
+ < _009_SpringFramework_DI_Setter 만들기 >
+ < Setter 함수 사용 >
+- SamsungTV가서, 알트 쉬프트 S 누르고 getter setter 만들기( price, speaker만 체크 )
+
+after setprice 하고 만들기(세터함수만)
+
+	public void setSpeaker(Speaker speaker) {
+		System.out.println("SetSpeaker 호출");
+		this.speaker = speaker;
+	}
+
+	public void setPrice(int price) {
+		System.out.println("SetPrice 호출");
+		this.price = price;
+	}
+그러고
+
+root-context가서 
+	<!-- 생성자 함수를 이용한 DI 
+		<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV">
+			<constructor-arg index="0" ref="apple"></constructor-arg>
+			<constructor-arg index="1" value="100000"></constructor-arg>
+		</bean> 
+	-->
+	
+	<!-- 세터함수를 이용한 DI -->
+	<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV">
+		<property name="speaker" ref="apple"></property>
+		<property name="price" value="100000"></property>
+	</bean>
+실행해보기.
+-------------------------
+namespace - p 체크
+source돌아와서, 
+	<!-- 세터함수를 이용한 DI -->
+	<!-- <bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV">
+			<property name="speaker" ref="apple"></property>
+			<property name="price" value="100000"></property>
+		</bean>
+	 -->
+	
+		 <!-- p namespace를 이용한 세터함수 호출(DI) -->
+	<bean id="sTv" class="com.ezen.spring.polymorphism.SamsungTV"
+	p:speaker-ref="apple" p:price="100000">
+	</bean>
+
+하고 실행해보기.
+
+
+실행 후 md 
+
+------------------------------------
+< _010_SpringFramework_DI_Annotation 만들기 >
+roott-context가서
+- namespace가서 context 추가.
+- source돌아와서 
+bean 객체 다 주석처리 하고,
+
+위에다가 
+<!-- component-scan: 대상 패키지에 있는 클래스들 중 어노테이션(@Component)가 선언된 클래스들을 찾아서 자동으로 객체로 만들어줌 -->
+	<context:component-scan base-package="com.ezen.spring.polymorphism"></context:component-scan>
+생성후
+
+LgTV가서 
+public class 위에
+@Component("lTv") 생성
+
+SonnySpeaker에 가서도
+@Component 생성하기.
+
+실행해보기.
+md로 고고씽
+--------------------------------
+
+LgTV
+public class LgTV 
+바로 밑에
+	// 의존성 주입이 필요한 객체 위에 선언
+	// Speaker 모양의 객체를 찾아서 의존성 주입
+	// SonySpeaker객체를 @Component로 생성하여 주입한다.
+	@Autowired
+	Speaker speaker;
+-------------------------
+
+
+--------------------------
+< Qulifier("아이디") 사용법 >
+LgTV 가서 그냥 
+
+@Autowired하고, 
+@Qualifier("sonySpeaker") 실행
+아래 Speaker(클래스명) 달아주기.
+
+@Qulifier("id")를 달아줬으면 아이디를 넣어줘야한다.
+@Resource(name="id")를 LgTV를 넣어놓고 실행시켜본다.
+그럼 해당 id의 소리증가, 감소가 실행된다.
+---------------------
+< _011_SpringFramework_DI_Annotation_Xml >
+
+- c드라이브에
+C:\Program Files (x86)\MySQL\Connector J 8.0  -> connector-j-8.0.31.jar
+이 경로를 이용할거임,.
+sts에서 
+맨밑 src-main-webapp-WEB_INF에 다가 폴더(lib)만들고, mysql-connector-j-8.0.31붙혀넣기
+다하고, 프로젝트 우클릭, 프로퍼티 -> 
+java build path - 위에 libraries - classpath- add library ->  web app libraries -> next -> finish
+apply and close하면, 프로젝트 펼쳐보면 아래 Web App Libraries가 생김.
+
+다했으면, root-context가서
+<!-- 어노테이션을 추가할 수 없는 클래스는 bean으로 등록하여 사용 -->
+	<!-- 대표적인 클래스 DB연동, transaction 등 클래스 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<!-- 세터함수를 이용한 의존성 주입 -->
+		<!-- driver 클래스를 사용하여 데이터베이스 연결을 만든다. -->
+		<!-- mySql만 사용가능한 Driver 다른 DB사용 시 Driver명이 변경 -->
+		<!-- oracle driver: oracle.jdbc.driver.OracleDriver -->
+		<!-- oracle url: jdbc:oracle:thin:@localhost:1521:xe -->
+		<property name="driverClassName" value="com.mysql.jdbc.Driver"></property>
+		<property name="url" value="jdbc:mysql://localhost:3306/studydb?serverTimezone=UTC"></property>
+		<property name="username" value="study"></property>
+		<property name="password" value="asdf"></property>
+	</bean>
+입력하기.
+
+
+
+

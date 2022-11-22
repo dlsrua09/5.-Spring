@@ -1,0 +1,131 @@
+< maven >
+
+< 여긴 업데이트 ! >
+
+maven repository에서 뭘 추가 하면 
+바로 프로젝트 우클릭 -> maven -> update하고, 
+
+< 업데이트 확인 ! >
+
+프로젝트 우클릭-> 프로퍼티 -> java build path -> libraries 
+-> classpath 선택 -> 오른쪽 add library 눌러서 -> web app libraries체크 next finish
+
+< 만약 MAVEN 잘 넣었는데 갑자기 무슨 에러가 날 때 >
+
+sts종료 -> C드라이브 -> 사용자 -> 사용자 이름 -> .m2 -> repository들어가서
+maven을 다 지운다 -> sts 실행 -> 다시 repository가 채워짐(다운받아지면서)
+
+다시 실행해도 안된다 -> 왼쪽 아래 tomcat server 우클릭 -> add and remove가서
+해당 프로젝트 remove하고, 다시 add한다음에 tomcat더블클릭 후 
+아래 modules클릭후 -> path더블클릭 -> / 만남 남기고 apply 저장 -> 
+마지막으로 위에 project -> clean 해보기.
+
+다 실행 잘되면,
+mysql workbanch 들어가서 studydb 스키마 받은 아이디로(study)로 들어간다.
+
+< MYSQL >
+
+CREATE TABLE T_NAME (
+	NAME_NO int PRIMARY KEY,
+    FIRST_NAME VARCHAR(200),
+    LAST_NAME VARCHAR(200),
+    JOB VARCHAR(200),
+    AGE INT
+);
+
+select * from t_name;
+
+생성하고 spring 돌아가기.
+
+HomeService(interface) 만들고 -> HomeServiceImpl -> 만들고 -> DAO만들고
+-> impl로 가서 HomeDAO homeDAO만들기 -> homeController 가서 HomeService homeService; 만들기
+home-mapper 가기 -> sql-map 가서 
+
+<mapper resource="mappings/*-mapper.xml"></mapper>
+생성하기
+
+이렇게 되면 home.jsp부터 작업을 짜면됌.
+home.jsp가서 action이랑, method 변경. -> 
+action이랑 매칭되는걸 controller에 만들면됌 .
+
+★★★★★★< 구현 방법 !!!!!  진짜 중요 잘봐 띱떼꺄 !!>★★★★★★
+
+homecontroller가서
+@PostMapping("insertName.do")
+	// nameVO = command 객체
+	public void insertName(NameVO nameVO) {
+		homeService.insertName(nameVO);
+	}
+만들고, 
+
+homeService가서
+
+public interface HomeService {
+	void insertName(NameVO nameVO);
+}
+하고, 구현은 serviceImpl 이니까 impl가서
+
+@Override
+	public void insertName(NameVO nameVO) {
+		homeDAO.insertName(nameVO);
+	}
+
+만듬.
+homeControll에서 homeService를 호출하지만, 구현하는건 homeServiceimpl 이 구현한다.
+
+homeDAO로 가서
+
+	public void insertName(NameVO nameVO) {
+		// mapper 쿼리문 호출  namespace.아이디
+		mybatis.insert("HomeDAO.insertName", nameVO);
+	}
+home-mapper로 가서 insertName 아이디를 가진 쿼리문 작성하면됌!!
+home-mapper로 와서,
+
+<mapper namespace="HomeDAO">
+	<!-- 쿼리 작성 영역 -->
+	<!-- 이름 추가 쿼리 -->
+	<insert id="insertName" parameterType="name">
+		INSERT INTO T_NAME(
+			NAME_NO,
+			FIRST_NAME,
+			LAST_NAME,
+			JOB,
+			AGE
+		) VALUES (
+		<!-- 여기서 A는 알리아스임(별칭) -->
+			(SELECT IFNULL(MAX(A.NAME_NO), 0) + 1 FROM T_NAME A),
+			<!-- 멤버변수 이름으로 만들기 -->
+			#{firstName},
+			#{lastName},
+			#{job},
+			#{age}
+		)
+	</insert>
+</mapper>
+하고, sql-mapping 가서 
+
+<!-- VO객체들 별칭 지정 -->
+	<typeAliases>
+		<typeAlias type="com.ezen.springboard.vo.BoardVO" alias="board"></typeAlias>
+		<typeAlias type="com.ezen.springboard.vo.UserVO" alias="user"></typeAlias>
+		<typeAlias type="com.ezen.springboard.vo.nameVO" alias="name"></typeAlias>
+	</typeAliases>
+typeAliastype 설정하기. 그리고 실행해보기
+
+방화벽 및 네트워크 보호 설정 배우기.
+	< 방화벽 >
+왼쪽아래 검색 : 방화벽 및 네트워크 보호 클릭 -> 고급 설정 -> 왼쪽 인바인드 규칙 -> 새규칙 ->
+포트(O) 선택하고 다음 ->  포트번호:8090적거나, localhost번호 3306 적거나 둘다적거나 하고
+다음 -> 마지막에 이름, 설명 자유롭게 쓰고 마침
+
+하고, root-context 가서 url을 누군가(강사님) 172.16.46.1:3306하면 , db를 서로 수정가능
+
+	< 내 ip 주소 찾기 >
+ 
+cmd -> ipconfig 검색하면 ip주소 뜸
+
+프로젝트 만들면
+servers 빈칸 우클릭 add and remove -> 새 프로젝트 선택 
+tomcat 더블클릭 module-> path / 만 남기고 다지우기
+

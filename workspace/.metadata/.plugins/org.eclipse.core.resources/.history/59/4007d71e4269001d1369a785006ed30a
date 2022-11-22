@@ -1,0 +1,68 @@
+package com.ezen.springboard.controller;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.ezen.springboard.service.user.UserService;
+import com.ezen.springboard.vo.UserVO;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+@Controller
+@RequestMapping("/user") 
+// 폴더 방식으로 만드는게 편함. 유저 안에 있는 것들을 꺼내라   userController는 /user로 불림
+public class UserController {
+	@Autowired
+	private UserService userService;
+	
+	// get방식은 해당 화면으로 이동
+	@GetMapping("/join.do")
+	public String joinView( ) {
+		return "user/join";
+	}
+
+	
+	// post방식은 해당 로직 처리
+	@PostMapping("/join.do")
+	public void join(UserVO userVO) {
+		
+	}
+	
+	@PostMapping("/test.do")
+	@ResponseBody
+	// @ResponseBody 역할: 기존엔 return되는 jsp를 찾아서 response body를 
+	//                    html(화면 자체를 만들어서)로 만들어서 리턴
+	//                    ResponseBody가 선언된 메소드는 리턴 값 자체가
+	//                    response body가 됨.(Html로 구조를 만들지 않음)
+	//                    문자열을 리턴하면, 요청을 호출한 곳에 문자열을 보내줌
+	public String test(UserVO userVO) {
+		// json형태의 문자열을 만들어서 리턴한다.
+		// ObjectMapper: 요청에 대한 응답으로 갈 데이터를 json형태로 변경 -> json문자열로 변경
+		ObjectMapper mapper = new ObjectMapper();
+		
+		// 데이터가 담길 Map 선언
+		Map<String, Object> jsonMap = new HashMap<String, Object>();
+		
+		jsonMap.put("test", 123);
+		jsonMap.put("firstName", "기천");
+		jsonMap.put("lastName", "고");
+		
+		UserVO user = new UserVO();
+		user.setUserId("aaa");
+		user.setUserPw("1234");
+		user.setUserNm("bbb");
+		
+		jsonMap.put("user", user);
+		
+		// 리턴해줄 json 문자열
+		// writerWithDefaultPrettyPrinter(): Map을 예쁜 형태의 json모양으로 변경해줌
+		// writerValueAsString(): json모양으로 변경된 객체를 문자열로 변경
+		String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonMap);
+	}
+}

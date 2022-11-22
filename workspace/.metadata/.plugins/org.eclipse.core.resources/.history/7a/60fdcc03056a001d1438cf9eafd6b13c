@@ -1,0 +1,8 @@
+package com.ezen.springboard.service.user;
+
+import com.ezen.springboard.vo.UserVO;
+
+public interface UserService {
+	int idCheck(String userId);
+	void join(UserVO userVO);
+}

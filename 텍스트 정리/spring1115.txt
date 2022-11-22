@@ -1,0 +1,372 @@
+< _013_SpringFramework_Log >
+// 전체 주석 컨트롤 쉬프트 슬래쉬
+// 전체 주석해제: 컨트롤 쉬프트 백슬래쉬
+
+
+pakage-common->class: LogAdvice생성
+public void printLog() {
+		System.out.println("[공통 로그] 비즈니스 로직 수행 전 동작");
+	}
+
+--
+boardServiceimpl가서
+
+private LogAdvice log;
+	
+	public BoardServiceImpl() {
+		log = new LogAdvice();
+	}
+
+생성하고 아래쪽 내려서 모든 매소드 안에
+
+log.printLog(); 생성
+
+-------------------
+< _014_SpringFramework_AOP >
+LogAdvice 클래스 복사
+Log4jAdvice 생성
+
+public void printLogging() {
+		System.out.println("[공통 로그- log4j] 비즈니스 로직 수행 전 동작");
+	}
+하고, boardServiceimpl 돌아가서
+원래대로 다 지우기. 그런 후,
+pom.xml들어가서 aspectj dependency아래
+
+<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjweaver</artifactId>
+    <version>1.9.9</version>
+    <scope>runtime</scope>
+</dependency>
+
+추가하면, MAVEN에 aspectj 1.9.9버전이 추가됌.
+root-context가서 namespace에 aop추가
+그다음 source로 돌아와서 맨 아래에다가
+
+<!-- AOP 설정 -->
+	<!-- 공통관심인 클래스는 bean객체로 미리 생성해야된다. -->
+	<bean id="log" class="com.ezen.spring.common.Log4jAdvice"></bean>
+	
+	<!-- AOP 동작 설정 -->
+	<!-- <aop:config>: aop 설정의 루트 엘리먼트로, 항상 aop:config로 aop 설정을 시작 -->
+	<aop:config>
+		<!-- aop:pointcut: 공통 기능 코드가 실행될 메소드 지정 -->
+		<aop:pointcut id="allpointcut"
+				expression="execution(* com.ezen.spring.service..*Impl.*(..))"></aop:pointcut>
+				
+
+		<!-- aop:aspect: 포인트컷과 어드바이스가 결합되는 설정 -->
+		<aop:aspect ref="log">
+			<!-- 어드바이스: 공통으로 추가될 기능 코드(printLogging) -->
+			<aop:before method="printLogging" pointcut-ref="allpointcut"/>
+		</aop:aspect>
+	</aop:config>
+
+생성.
+boardServiceTest 가서 구동 해보기.
+
+root-context에서
+	<aop:pointcut id="getpointcut"
+		expression="execution(* com.ezen.spring.service..*Impl.get(..))"></aop:pointcut>
+하나 더 만들기. pointcut 바로아래
+----------
+< _015_SpringFramework_AOP_Timing > 생성
+
+class AfterReturningAdvice 생성(class LogAdvice복사해서)
+그 안에
+
+public void afterReturningMethod() {
+		System.out.println("[사후 처리] 비즈니스 로직 정상 종료 시 동작");
+	}
+생성
+root-context가서
+클래스 AfterReturing-으로 고치기.
+aop:after-returning method="afterReturningMethod" 고치기.
+실행
+----------
+class AfterThrowingAdvice만들고 수정
+
+public void afterThrowingMethod() {
+		System.out.println("[예외 처리] 비즈니스 로직 중 예외 발생 시 동작");
+	}
+
+
+한다음 BoardServiceImpl class가서 
+
+@Override
+	public void insertBoard(BoardVO boardVO) {
+		// 임의로 예외 발생
+		if(boardVO.getBoardNo() == 0) {
+			throw new IllegalArgumentException("0번 글은 등록할 수 없습니다.");
+		}
+		
+		boardDAO.insertBoard(boardVO);
+	}
+수정
+
+root-context가서
+
+클래스변경하고, 아래것도 변경
+<aop:after-throwing method="afterThrowingMethod" pointcut-ref="allpointcut"/>
+-------
+class AfterAdvice생성 (afterThrow복사)
+
+public void afterMethod() {
+		System.out.println("[사후 처리] 비즈니스 로직 종료 후 무조건 동작");
+	}
+생성
+root-context가서
+<bean id="after" class="com.ezen.spring.common.AfterAdvice"></bean>
+하나 더 생성
+
+	<aop:aspect ref="after">
+		<!-- 어드바이스: 공통으로 추가될 기능 코드(printLogging) -->
+			<aop:after method="afterMethod" pointcut-ref="allpointcut"/>
+	</aop:aspect>
+아래쪽에 생성
+-----------
+class AroundAdvice생성 ( afterAdvice복사)
+
+/*
+	 ProceedingJoinPoint: 현재 진행중인 포인트컷 메소드 
+	 
+	 */
+	public Object aroundMethod(ProceedingJoinPoint pjp) throws Throwable {
+		System.out.println("[사전 처리] 비즈니스 로직 전 동작");
+		Object returnObj = pjp.proceed();
+		System.out.println("[사후 처리] 비즈니스 로직 후 동작");
+		return returnObj;
+	}
+만들고, root-context가서
+
+	<aop:around method="aroundMethod" pointcut-ref="allpointcut"/>
+		</aop:aspect>
+		
+		 <!--  <aop:aspect ref="after">-->
+			<!-- 어드바이스: 공통으로 추가될 기능 코드(printLogging) -->
+			<!-- <aop:after method="afterMethod" pointcut-ref="allpointcut"/>
+		</aop:aspect>-->
+처리하고, BoardServiceImpl 가서 if문도 주석처리하고 실행.(class도 변경)
+-------------
+< 예제 프로젝트: _016_SpringFramework_AOP_JoinPoint >
+class afterAdvice 복사해서 -> class BeforeAdvice생성
+
+public void beforeMethod(JoinPoint jp) {
+		String methodName = jp.getSignature().getName();
+		Object[] methodArgs = jp.getArgs();
+		
+		System.out.println("[사전 처리]" + methodName + "() 메소드 ARGS 정보: " + methodArgs[0].toString());
+	}
+만들고, root-context가서
+class명: BeforeAdvice설정, aop:before method="beforeMethod" 하고 실행
+실행후, BoardServiceTest 에서
+
+4번 주석처리하고,
+
+// 4-1. 글 상세 조회
+	BoardVO board = new BoardVO();
+	board.setBoardNo(2);
+	BoardVO printBoard = boardService.getBoard(board);
+	System.out.println(printBoard.toString());
+이 글 붙여넣기고 실행하면, 에러없이 실행가능.
+
+AfterReturningAdvice 가서
+
+// returnObj: 포인트컷 메소드가 종료될 때 반환해주는 반환 값
+	// 두 번째 인자인 Object를 바인드 변수라고 하고 메소드의 리턴 값을 자동으로 매핑
+	public void afterReturningMethod(JoinPoint jp, Object returnObj) {
+		String methodName = jp.getSignature().getName();
+		if (returnObj instanceof UserVO) {
+			UserVO user = (UserVO)returnObj;
+			if (user.getId().equals("admin")) {
+				System.out.println(user.getName() + " 로그인(admin");
+			}
+		}
+		
+		System.out.println("[사후 처리]" + methodName + "() 리턴 값: " + returnObj.toString());
+	}
+만들기.
+root-context가서 
+<!-- aop:after-returning일 떄 returning 속성을 사용하여 리턴값을 바인드변수와 매핑
+(속성값은 클래스에 설정한 바인드 변수명과 일치해야한다.) -->
+<aop:after-returning method="afterReturningMethod" pointcut-ref="allpointcut" returning="returnObj"/>
+bean id="log" class="AfterReturningAdvice하고,
+
+userServiceTest가서 
+		// 3. 회원 등록 테스트
+//		UserVO userVO = new UserVO();
+//		userVO.setId("아이디");
+//		userVO.setPassword("비밀번호");
+//		userVO.setName("이름");
+//		
+//		userService.join(userVO);
+		
+		// 4. 회원 조회 테스트
+		// Id를 세팅하기위한 UserVO 객체
+		UserVO userVO = new UserVO();
+		userVO.setId("admin");
+		UserVO userInfo = userService.getUser(userVO);
+		System.out.println(userInfo.toString());
+
+userServiceTest실행
+-------------
+class AfterThrowingAdvice 가서
+
+public void afterThrowingMethod(JoinPoint jp, Exception exceptObj) {
+		String methodName = jp.getSignature().getName();
+		
+		System.out.println("[예외 처리]" + methodName + "() 실행 중 발생한 예외 메세지: " + exceptObj.getMessage());
+	}
+하고, root-context가서
+
+<!-- aop:after-throwing일 때 바인드 변수 매핑은 throwing 속성을 사용한다. -->
+			<aop:after-throwing method="afterThrowingMethod" pointcut-ref="allpointcut" throwing="exceptObj"/>
+하고, boardServiceImpl가서
+예외처리 주석 해제 하고 실행시켜보기.( 예외처리)
+----------------
+AroundAdvice class로 와서
+
+public Object aroundMethod(ProceedingJoinPoint pjp) throws Throwable {
+		String methodName = pjp.getSignature().getName();
+		
+		// 메소드 실행하는데 걸리는 시간 계산
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+		
+		Object returnObj = pjp.proceed();
+		
+		stopWatch.stop();
+		
+		System.out.println(methodName + "() 실행 하는데 걸린 시간: " + stopWatch.getTotalTimeMillis() + "(ms)초");
+		return returnObj;
+	}
+만들고, root-context가기
+class:이름 변경
+<aop:around method="aroundMethod" pointcut-ref="allpointcut"/>
+
+BoardServiceImpl 에서
+예외처리 주석시키기 후 실행
+------------
+< _017_SpringFramework_AOP_Annotation > 
+
+root-context가서, bean포함 aop다 주석하고,
+아래것만 만들기
+
+<!-- AOP 관련 어노테이션들을 읽어들여 AOP를 구현 -->
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+
+logAdvice가서 기존거 지우고,
+	// 1. 포인트컷 설정
+	@Pointcut("execution(* com.ezen.spring.service..*Impl.*(..))")
+	public void allPointcut() {}
+	
+	@Pointcut("execution(* com.ezen.spring.service..*Impl.get(..))")
+	public void getPointcut() {}
+
+	// 2. 어드바이스 설정: aop의 시점을 어노테이션으로 매개변수로 포인트컷 메소드명을 넣어준다.
+	// @Before, @AfterReturning, @AfterThrowing, @After, @Around
+	@Before("allPointcut()")
+	public void printLog() {
+		System.out.println("[공통 로그] 비즈니스 로직 전 실행");
+	}
+
+클래스 위에, 
+// 3. 애즈팩트 설정
+// @Aspect 사용 시, 클래스 안의 포인트컷과 어드바이스가 결합하여 애즈팩트로 인식
+@Aspect 하기. 실행.
+
+root-context로 가서, 이렇게 하기
+<context:component-scan base-package="com.ezen.spring"></context:component-scan>
+
+BeforeAdvice class 열고, 클래스, public void 사이에
+
+// 1. 포인트컷 설정(스스로 해보기)
+	@Pointcut("execution(* com.ezen.spring.service..*Impl.*(..))")
+	public void allPointcut() {}
+	
+	@Pointcut("execution(* com.ezen.spring.service..*Impl.get(..))")
+	public void getPointcut() {}
+			
+	// 2. 어드바이스 설정
+	@Before("allPointcut()")
+// 3. class위에 
+@Aspect
+다했으면
+pakage common -> class PointcutCommon 생성
+	@Pointcut("execution(* com.ezen.spring.service..*Impl.*(..))")
+	public void allPointcut() {}
+	
+	@Pointcut("execution(* com.ezen.spring.service..*Impl.get(..))")
+	public void getPointcut() {}
+그대로 붙여넣기. class위에 @Aspect
+
+beforeAdvice클래스-> 포인트컷 설정 다 주석 -> 
+2번 어드바이스 설정 @Before("PointcutCommon.allPointcut()") 하고 실행해보기.
+-------
+< _018_SpringFramework_JDBCTemplate >
+pom.xml가서
+
+	<dependency>
+	    <groupId>org.apache.commons</groupId>
+	    <artifactId>commons-dbcp2</artifactId>
+	    <version>2.9.0</version>
+	</dependency>
+복사붙이고, 옆에 Maven에 dbcp2-2.9.0 확인하고,
+root-context가서 맨 아래
+
+
+<!-- JDBC Template에서 사용할 DateSource 설정 -->
+	<!-- dataSource같은 bean객체는 정해진 id로 생성해야 한다. -->
+	<bean id="dataSource" class="org.apatche.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="Driver" value="com.mysql.cj.jdbc.Driver"></property>
+		<property name="url" value="jdbc:mysql://localhost:3306/studydb?serverTimezone=UTC"></property>
+		<property name="userName" value="study"></property>
+		<property name="password" value="!ezen1234"></property>
+	</bean>
+만들기
+src-src/main/resources에 폴더 config 만들기 - 파일 db.properties 만들기. 그안에
+
+jdbc.driver=com.mysql.cj.jdbc.Driver
+jdbc.url=jdbc:mysql://localhost:3306/studydb?serverTimezone=UTC
+jdbc.username=study
+jdbc.password=!ezen1234
+
+넣기. root-context가서 맨믿 바로 위에
+<!-- 외부 파일 참조 -->
+	<!-- classpath: ==> java build path의 source탭에 설정되어 있는 classpath 위치 -->
+	<context:property-placeholder location="classpath:config/db.properties"/>
+
+다하고, 프로젝트->properties-> java build path -> source란에서 4개 폴더 확인(classpath)
+다했으면 root-context에 아래를
+
+	<bean id="dataSource" class="org.apatche.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="userName" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+		
+이렇게 수정하고,
+
+StarUML압축풀어서 실행
+기본 화면에서 우클릭 add Diagram->use case diagram
+해보고
+mysql-> id study들어가서, 왼쪽위에 file-new model
+
+해서
+ID    ADDRESSNO
+1       1
+1       2
+1       3
+1       4
+
+카테고리(c) - C01(상의) - C0101(반팔티)
+                   - C02(하의) - C0201(데님)
+
+사이즈(S) - S01(스몰)
+                - S02(미디움)
+
+
+

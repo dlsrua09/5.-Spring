@@ -1,0 +1,340 @@
+
+// 알트 쉬프트 s -> 자동 게터세터, toString
+
+< spring - git 연동>
+window -> show view -> other -> git -> git repository 하고,
+
+
+
+github.com 들어가서 로그인 후 -> github.com/blze0515 검색한뒤, 가운데 Repositories클릭후
+아래 public: eclipsetest 클릭 -> 초록색 코드 눌러서 링크복사 ->
+아까 spring돌아가서 git 띄웠을때 생성됐던 -> clone a git repository 들어가서,
+맨위에 링크 붙여넣기,
+
+계속 진행해서 오른쪽 위 내 아이디 아래로 펼쳐서 settings 들어가서  developer settings들어가고,
+personal acess tokens 내려서 tokens 클릭하고, 만들고 하기.
+
+만들면 링크뜨는데 복사해서
+
+clone a git repo 창에
+userid = 내 git 아이디
+password = 마지막에 token복사한 복사본 붙여넣기  -> next -> master만 체크하고, next -> finish
+
+git repository -> eclipseTest우클릭 properties클릭 -> 
+working tree -> import project -> import할거 체크되있으면 finish
+후 
+eclipsetest 우클릭 team-> 
+
+git 땡겨올때:
+eclipsetest 프로젝트 우클릭 -> team -> pull... 클릭 -> 
+reference에 아까 체크했던 master (ma만 해도 뜸) finish하면  됌
+
+또는 땡겨올때 git pull origin master
+
+
+< 추가 시 맨밑에 추가하는게 낫다. 충돌시 백업 바로바로 가능 >
+
+만약 충돌시 내가 만든거 메모장에 백업
+그담 bash나 cmd 열어가지고
+
+cd를 이용해 git폴더를 찾아간다음에
+
+git fetch -all 하고 엔터
+git reset --hard origin/master 하고 엔터한다.
+
+그리고 git pull origin master 엔터하면 최신버전이라고 뜸
+
+
+
+--------------------------
+< 게시판 생성 >
+
+new - new spring legacy - _021_SpringBoard_Template 생성( Spring MVC Project 체크 )
+next -> com.ezen.springboard - finish
+
+프로젝트 우클릭 - 프로퍼티 - project facets -> dynamic(3.1), java(11)로 변경 
+ 오른쪽 위 runtimes -> apache 체크 -> apply -> apply close
+-> pom.xml 
+
+<java-version>11</java-version>
+<org.springframework-version>5.2.22.RELEASE</org.springframework-version>
+<org.aspectj-version>1.9.9</org.aspectj-version>
+<org.slf4j-version>1.7.36</org.slf4j-version>
+
+이렇게 변경하고 쭉 내려
+
+<!-- Servlet --> ( artifactId랑, version변경)
+	<dependency>
+		<groupId>javax.servlet</groupId>
+		<artifactId>javax.servlet-api</artifactId>
+		<version>3.1.0</version>
+		<scope>provided</scope>
+
+버전만 변경
+
+ <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.5.1</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                    <compilerArgument>-Xlint:all</compilerArgument>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                </configuration>
+            </plugin>
+            <plugin>
+
+소스 타겟 변경.
+
+web.xml -> 버전만 2개 3.1, _3_1(숫자만)로 변경
+다했으면 sts 껐다가 다시켜기
+
+pom.xml에
+
+<!-- https://mvnrepository.com/artifact/org.aspectj/aspectjweaver -->
+	<dependency>
+	    <groupId>org.aspectj</groupId>
+	    <artifactId>aspectjweaver</artifactId>
+	    <version>1.9.9</version>
+	    <scope>runtime</scope>
+	</dependency>
+		
+	<dependency>
+	    <groupId>org.springframework</groupId>
+	    <artifactId>spring-jdbc</artifactId>
+	    <version>${org.springframework-version}</version>
+	</dependency>
+		
+	<dependency>
+	    <groupId>org.apache.commons</groupId>
+	    <artifactId>commons-dbcp2</artifactId>
+	    <version>2.9.0</version>
+	</dependency>
+		
+	<dependency>
+	    <groupId>org.mybatis</groupId>
+	    <artifactId>mybatis</artifactId>
+	    <version>3.5.10</version>
+	</dependency>
+		
+	<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
+	<dependency>
+	    <groupId>org.mybatis</groupId>
+	    <artifactId>mybatis-spring</artifactId>
+	    <version>2.0.7</version>
+	</dependency>
+				
+		
+	<dependency>
+	    <groupId>org.apache.ibatis</groupId>
+	    <artifactId>ibatis-core</artifactId>
+	    <version>3.0</version>
+	</dependency>
+
+	<!-- https://mvnrepository.com/artifact/cglib/cglib -->
+	<!-- 웹에서 AOP 동작하게 해주는 라이브러리 -->
+	<dependency>
+  	  <groupId>cglib</groupId>
+   	 <artifactId>cglib</artifactId>
+ 	   <version>3.3.0</version>
+	</dependency>
+
+appServlet폴더 - servlet-context에다가( 자식 springcontainer )
+
+<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<!-- resources: 정적 파일을 모든 사용자가 접근할 수 있게 설정 -->
+	<!-- 무조건 webapp이 기본적인 / 앞에 폴더이다. -->
+	<resources mapping="/resources/**" location="/resources/" />
+	<resources mapping="/css/**" location="/css/" />
+	<resources mapping="/js/**" location="/js/" />
+	<resources mapping="/images/**" location="/images/" />
+	<resources mapping="/upload/**" location="/upload/" />
+생성하기.
+
+<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<!-- 콘트롤러 메소드에서 리턴할 때 responseBody가 항상 HTML화 되는데 String 리턴했을 때 
+		 해당 JSP를 찾아줌-->
+	<!-- 만약 return "aa"; => /WEB-INF/views/aa.jsp -->
+
+<context:component-scan base-package="com.ezen.springboard.controller" />
+
+root-context가서 namespace -> aop, context, tx 체크
+
+<!-- Root Context: defines shared resources visible to all other web components -->
+	<context:component-scan base-package="com.ezen.springboard.service"></context:component-scan>
+	
+	<!-- DB연동 설정 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		
+작성후,
+이전 프로젝트에서 web-inf -> lib자체를 복사하고 21 프로젝트에 붙혀넣기
+하고, 프로젝트 우클릭-프로퍼티 -> java_build_path - classpath 선택 -> add library 하고 선택 finish~
+다했으면, root-context로 돌아와서
+
+<!-- Root Context: defines shared resources visible to all other web components -->
+	<context:component-scan base-package="com.ezen.springboard.service"></context:component-scan>
+	
+	<!-- DB연동 설정 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
+		<property name="url" value="jdbc:/mysql://localhost:3306/studydb?serverTimezone=UTC"></property>
+		<property name="username" value="study"></property>
+		<property name="password" value="!ezen1234"></property>
+		
+		<!-- 커넥션 풀 설정 -->
+		<!-- 연결 풀이 최초로 생성될 때 가지고 있을 커넥션의 개수, 기본 값은 0 -->
+		<property name="initialSize" value="0"></property>
+		<!-- 동시에 최대로 가질 수 있는 커넥션의 개수, 기본값은 8 -->
+		<property name="maxTotal" value="8"></property>
+		<!-- 사용하지 않는 상태로 가질 수 있는 최대 커넥션의 개수, 기본 값은 8 -->
+		<property name="maxIdle" value="8"></property>
+		<!-- 사용하지 않는 상태로 가질 수 있는 최소 커넥션의 개수, 기본 값은 0  -->
+		<property name="minIdle" value="0"></property>
+		<!-- 커넥션이 모두 사용중일때 다음 사용자가 대기 해야하는 최대 시간, 기본 값은 -1.
+			 -1은 무한정 대기를 의미. -->
+		<property name="maxWaitMillis" value="-1"></property>
+	</bean>
+	
+	<!-- Mybatis 설정 -->
+	<bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<property name="configLocation" value="classpath:sql-map-config.xml"></property>
+	</bean>
+	
+	<bean class="org.mybatis.spring.SqlSessionTemplate">
+		<!-- 생성자로 어떤 contructor 사용할건지 -->
+		<!-- 위에 있는 sessionFactory를 참조해서 하나씩 사용하겠다는 말 -->
+		<constructor-arg ref="sessionFactory"></constructor-arg>
+	</bean>
+	
+	<!-- Transaction 설정 -->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<!-- dataSource참조 -->
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="select*" read-only=true/>
+			<tx:method name="*"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut expression="execution(* com.ezen.springboard.service..*impl.*(..))" id="txPointcut"/>
+		
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txPointcut"/> 
+	</aop:config>
+작성
+
+20번 프로젝트에서 src/main/resources -> sql-map-config.xml 복사 붙혀넣기
+sql-map-config.xml 가서 
+
+<!-- 사용할 SQL 매퍼 위치 지정 -->
+	<mappers>
+		<mapper resource="mappings/*-mapper.xml"></mapper>
+	</mappers>
+*로 변경, 모든 -mapper.xml로 끝나는걸 읽을 수 있게하고,
+
+resources에 폴더 mappings를 만들고,
+20번 프로젝트에서 mappings안에 board-mapper.xml를 가져와 복붙한다.
+하고,
+
+ web.xml 가서 맨 위에
+	<!-- WAS가 구동되면서 web.xml파일을 읽어서 서블릿 컨테이너를 생성 -->
+	<!-- 서블릿 컨테이너는 클라이언트의 요청이 들어올 때마다 서블릿을 생성 -->
+	<!-- 서블릿 컨테이너가 생성되면서 부모 스프링컨테이너와 자식 스프링컨테이너를 순차적으로 생성 -->
+작성하고, 
+
+	<!-- root-context.xml파일 읽어서 부모 스프링 컨테이널를 생성 -->
+	<!-- The definition of the Root Spring Container shared by all Servlets and Filters -->
+	<context-param>
+	
+
+	<!-- 서블릿이 생성될 떄 (클라이언트에서 요청이 왔을 때) servlet-context.xml을 읽어서
+		 자식 컨테이너 생성 -->
+	<!-- Processes application requests -->
+
+주석만 적기.
+
+	<!-- 어떤 url 패턴의 요청이 들어왔을 때 서블릿이 생섣욀건지 설정 -->
+	<servlet-mapping>
+		<servlet-name>appServlet</servlet-name>
+		<!-- .do 호출로 설정하는 것은 스프링 프레임워크에 관행
+		 	 쿠팡에서는 .pang을 사용 -->
+		<!-- 스프링 부트에서는 .do를 뺀 url 패턴을 사용 -->
+		<url-pattern>*.do</url-pattern>
+	</servlet-mapping>
+
+patterun -> *.do로 바꾸기, 주석쓰고
+
+<!-- 자바와 jsp에서 데이터 전송이 일어날 경우에 한글이 깨지는 상황을 대비해 
+		 encoding 필터 설정 -->
+	<filter>
+		<filter-name>characterEncoding</filter-name>
+		<filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+	
+	<!-- 필터와 url패턴 매핑 -->
+	<filter-mapping>
+		<filter-name>characterEncoding</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>
+다했으면, 틀을 잡을거다.
+
+package생성
+com.ezen.springboard에 package: controll, service 생성
+package: service에 package:user 그리고 board 만들기(안에 2개 패키지)
+
+	< 패키지 쉽게 보기 >
+
+강사님 처럼 패키지 보고싶으면,
+왼쪽위에 세로로 ... 클릭 - package presentation -> hier 선택
+
+package controller - class uerController, boardController 생성
+그냥 봐 귀찮다 ㅇㅋ?
+
+  < 핵심 >
+class boardController 에서는
+	// 멤버변수 생성
+	// service에 있는 메소드를 호출
+	// 주소변경, 클릭, 엔터 요청 시 -> controller에 requestMapping안에 메소드를 추가하고 실행시키게 해줌
+	// 컨트롤러에서는 boardService 메소드를 호출하는 역할이 큼
+	/*
+	 클라이언트가 이벤트를 발생시키면 요청이 발생되고
+	 컨트롤러에서 @RequestMapping으로 매핑된 매핑주소와 요청주소가 같으면
+	 해당 메소드를 실행한다.
+	 해당 메소드안에서는 DB접근이 필요할 때는 Service의 메소드를 호출하여
+	 ServiceImpl -> DAO -> Mapper까지 실행한다.
+	 DB접근이 필요없는 경우는 해당 메소드에서 바로 jsp(화면단)을 리턴한다.
+	 화면에서 요청발생 -> Controller -> Service -> ServiceImpl -> DAO -> Mapper    
+	 항상 요런 구성은 아니지만 보통 이렇다(위에구성)  
+	 DB에서 가져올 데이터가 있을 경우 위 순서의 역순으로 진행
+	 */
+
+web_inf -> jsp로 요청이 있어야지만 수행이 가능하다.
+web_inf에다가 jsp파일 다 떄려박고 다음 프로젝트 복사 붙혀넣기
+
+_022_SpringBoard_DataTransfer
+
+	< 웹 사이트 띄우기 >
+
+서버 켜기 왼쪽 아래 톰켓 우클릭 - add and remove하고 프로젝트 22번 클릭
+선택하고 나온담 finish
+톰켓 - 더블클릭 후 -> module 클릭하고 path선택하고 edit하고 path / 만 쓰고 ok
+만약 경고 창 뜨면서 포트가 겹친다고하면, 8080 -> 8090설정하고 왼쪽아래 실행버튼 클릭해보기
+
+게시판 
+home.jsp에서 
+<!-- method="get"은 입력값이 다 보임, post는 입력값이 안보임, 그래서 대부분 post -->
+<!-- name값은 key값 -->
+
+
+

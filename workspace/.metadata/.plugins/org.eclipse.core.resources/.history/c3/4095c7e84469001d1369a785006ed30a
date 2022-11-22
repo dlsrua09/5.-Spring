@@ -1,0 +1,12 @@
+package com.ezen.springboard.service.board.impl;
+
+import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class BoardDAO {
+	@Autowired
+	// DB에 접근하여 DB조작 할 수 있도록 구현
+	private SqlSessionTemplate mybatis;
+}

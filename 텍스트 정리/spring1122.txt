@@ -1,0 +1,12 @@
+<![CDATA[
+	INSERT INTO T_USER (
+		USER_ID,
+		USER_PW,
+		USER_NM,
+		USER_EMAIL)
+	VALUES(
+		#{userId},
+		#{userPw},
+		#{userNm},
+		#{userMail})
+]]>

@@ -1,0 +1,192 @@
+< StarUML 실행 >
+-> 우클릭 -> add Diagram -> useCaseDiagram
+
+_018프로젝트에
+service -> class BoardRowMapper 만들기
+
+MAVEN repository -> spring-jdbc
+pom.xml가서, 
+
+<dependency>
+	 <groupId>org.springframework</groupId>
+	 <artifactId>spring-jdbc</artifactId>
+	  <version>${org.springframework-version}</version>
+</dependency>
+
+spring 아래 dependency  붙여넣기 
+하고, BoardRowMapper 돌아와서
+
+public BoardVO mapRow(ResultSet rs, int rowNum) throws SQLException {
+		BoardVO board = new BoardVO();
+		board.setBoardNo(rs.getInt("BOARD_NO"));
+		board.setBoardTitle(rs.getString("BOARD_TITLE"));
+		board.setBoardContent(rs.getString("BOARD_CONTENT"));
+		board.setBoardWriter(rs.getString("BOARD_WRITER"));
+		board.setBoardRegdate(rs.getDate("BOARD_REGDATE"));
+		board.setBoardCnt(rs.getInt("BOARD_CNT"));
+		
+		return board;
+	
+		
+		
+		
+	}
+BoardDAO -복사 BoardDAOJDBC생성
+@Repository 주석처리
+-> DAO가서 위에서부터 따다닥 정리하기.
+-> beforeAdvice 가서 어노테이션 다 주석처리
+-> root-context와서
+
+<!-- JDBC Template에서 사용할 DataSource 설정 -->
+	<!-- dataSource같은 bean객체는 정해진 id로 생성해야 한다. -->
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	
+	
+한담 실행해보기 하고,
+
+<!-- JDBC Template bean 객체로 등록 -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+하고, BoardDAO 복사 붙혀넣기- > BoardDAOJdbcDaoSupport생성
+하고, BoardDAO돌아와서
+
+의존성 주입 지우고,
+
+class 바로 아래 
+	@Autowired
+	JdbcTemplate jdbcTemplate;
+입력한뒤, 
+getJdbcTemplate()를 jdbcTemplate로 다 변경 후 실행
+
+--------------
+< _019_SpringFramework_Transaction >
+root-context-> namespace-> tx체크(transaction)-> source로 돌아와서
+
+<!-- Transaction 설정(DDL이 끝난 후 자동으로 commit, rollback 호출) -->
+	<!-- TransactionManager 클래스를 bean 객체로 만들어서 Transaction을 관리 -->
+	<bean id="txManager" 
+			class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>		
+	</bean>
+	
+	<!-- TransactionManager로만은 Transaction이 관리하지 않음 -->
+	<!-- AOP로 어드바이스나, 어드바이저 등을 설정해 Transaction이 동작함 -->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<!-- 어떤 메소드에서 transaction이 동작할지 설정 -->
+		<tx:attributes>
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="*"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- aop로 포인트컷과 어드바이저 설정 -->
+	<aop:config>
+		<aop:pointcut expression="execution(* com.ezen.spring.service..*(..))" 
+						id="txPointcut" />
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="txtPointcut"/>
+	</aop:config>
+하고 실행하고 끄기
+
+카톡 쌤이 주신 거 압축풀고
+features도 이름 파일만들고, 붙혀넣기
+artifacts, content는 sts실행 plugins에 붙여넣기 JavaOM도 붙혀넣기, 다했으면
+
+D:\aws220726\spring\sts-3.9.18.RELEASE\configuration\org.eclipse.equinox.simpleconfigurator
+bundles.info 를 vscode로 들어가기.
+
+#version=1 바로밑에
+1.0.0.201411180016.jar,plugins/JavaORMPlugin_1.0.0.201411180016.jar,4,false
+
+입력했으면 save 종료
+
+STS실행 window-show view- other-plug-plug_ins 클릭 open하면 오른쪽에 3개뜸
+
+프로젝트 패키지-/java-우클릭-new-other하고, my 입력했을때 3개가 나와야함.
+----------
+< _020_SpringFramework_Mybatis >
+pom_xml->
+
+<dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis</artifactId>
+    <version>3.5.10</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/org.mybatis/mybatis-spring -->
+<dependency>
+    <groupId>org.mybatis</groupId>
+    <artifactId>mybatis-spring</artifactId>
+    <version>2.0.7</version>
+</dependency>
+
+
+<dependency>
+    <groupId>org.apache.ibatis</groupId>
+    <artifactId>ibatis-core</artifactId>
+    <version>3.0</version>
+</dependency>
+
+붙여넣기하고, src/main/resource -> new -> file-> sql-map-config.xml만들고
+그안에
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+ 	PUBLIC "-//mybatis.org//DTD config 3.0//EN"
+ 	"http://mybatis.org/dtd/mybatis-3-config.dtd">
+ 	
+<configuration>
+	<!-- 쿼리문의 결과로 오는 컬럼이름을 카멜케이스로 변경 -->
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"></setting>
+	</settings>
+	
+	<!-- VO객체들 별칭 지정 -->
+	<typeAliases>
+		<typeAlias type="com.ezen.spring.vo.BoardVO" alias="board"></typeAlias>
+		<typeAlias type="com.ezen.spring.vo.UserVO" alias="user"></typeAlias>
+	</typeAliases>
+	
+	<!-- 사용할 SQL 매퍼 위치 지정 -->
+	<mappers>
+		<mapper resource="mappings/board-mapper.xml"></mapper>
+	</mappers>
+</configuration>
+
+붙혀넣기하고 root-context가서
+JDBC Template bean 주석처리
+
+그위에
+
+<!-- DB 연결 세선관리 객체(SessionFactory 객체) -->
+	<bean id="session" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+		<!-- mybatis 설정 파일 위치 지정 -->
+		<property name="configLocation" ref="classPath:sql-map-config.xml"></property>
+	</bean>
+	
+	<!-- session 하나씩 꺼내서 사용할 객체(SessionTemplate) -->
+	<bean class="org.mybatis.spring.SqlSessionTemplate">
+		<!-- 어느 SessionFactory에서 꺼내서 사용할지 지정 -->
+		<constructor-arg ref="sessionFactory"></constructor-arg>
+	</bean>
+했으면
+resource에 폴더 mappings-> 파일 board-mapper.xml만들고
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ 	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+쓰고,
+
+boardDAO 복사 -> BoardDAOJDBCTemplate 만들기 -> 어노테이션 주석
+-> BoardDAO 다시 가서 
+
+-------------------
+StarUML 들어가서
+Class 넣고, new -> 위에서 두번째께 중간
